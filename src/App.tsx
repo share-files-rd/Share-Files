@@ -1413,21 +1413,18 @@ export default function App() {
     setIsGuestMode(true);
     setView('vault');
     setComingSoonError("APPLE LOGIN SIMULATED (GUEST MODE)");
-    setTimeout(() => setComingSoonError(null), 3000);
+    setTimeout(() => setComingSoonError(null), 8000);
   };
 
   const facebookLogin = async () => {
-    setIsGuestMode(true);
-    setView('vault');
-    setComingSoonError("FACEBOOK LOGIN SIMULATED (GUEST MODE)");
-    setTimeout(() => setComingSoonError(null), 3000);
+    socialLogin('facebook');
   };
 
   const githubLogin = async () => {
     setIsGuestMode(true);
     setView('vault');
     setComingSoonError("GITHUB LOGIN SIMULATED (GUEST MODE)");
-    setTimeout(() => setComingSoonError(null), 3000);
+    setTimeout(() => setComingSoonError(null), 8000);
   };
 
   const logout = async () => {
@@ -2070,23 +2067,43 @@ export default function App() {
                     <span>Continue with Google</span>
                   </button>
 
-                  {/* Social Buttons */}
+                  {/* Social Buttons (Coming Soon) */}
                   <div className="grid grid-cols-2 gap-2.5">
-                    <button 
-                      onClick={() => login('facebook')}
-                      className="py-3 px-3 bg-[#1877F2]/20 hover:bg-[#1877F2]/30 border border-[#1877F2]/40 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95"
-                    >
-                      <Facebook className="w-4 h-4 fill-white shrink-0" />
-                      <span>Facebook</span>
-                    </button>
+                    <div className="relative group">
+                      <button 
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setComingSoonError("Facebook login is coming in the next update!");
+                          setTimeout(() => setComingSoonError(null), 8000);
+                        }}
+                        className="w-full py-3 px-3 bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 rounded-xl text-white/60 font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <Facebook className="w-3.5 h-3.5 fill-current shrink-0" />
+                          <span>Facebook</span>
+                        </div>
+                        <span className="text-[9px] text-accent font-black tracking-wider uppercase opacity-80">Coming Soon</span>
+                      </button>
+                    </div>
 
-                    <button 
-                      onClick={() => login('github')}
-                      className="py-3 px-3 bg-white/10 hover:bg-white/15 border border-white/15 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95"
-                    >
-                      <Github className="w-4 h-4 fill-current shrink-0" />
-                      <span>GitHub</span>
-                    </button>
+                    <div className="relative group">
+                      <button 
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setComingSoonError("GitHub login is coming in the next update!");
+                          setTimeout(() => setComingSoonError(null), 8000);
+                        }}
+                        className="w-full py-3 px-3 bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 rounded-xl text-white/60 font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <Github className="w-3.5 h-3.5 fill-current shrink-0" />
+                          <span>GitHub</span>
+                        </div>
+                        <span className="text-[9px] text-accent font-black tracking-wider uppercase opacity-80">Coming Soon</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3 py-1">
