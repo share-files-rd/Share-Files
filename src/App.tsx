@@ -4039,6 +4039,7 @@ export default function App() {
       <LegalFooterModal 
         externalModal={showLegalModal} 
         onCloseExternal={() => setShowLegalModal(null)} 
+        logoUrl={logoUrl}
       />
       </div>
     </ErrorBoundary>

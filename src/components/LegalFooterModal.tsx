@@ -1,14 +1,57 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Lock, AlertTriangle, Check, X, ShieldAlert, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
+import { FileText, Lock, AlertTriangle, Check, X, ShieldAlert, EyeOff, ArrowRight, ArrowLeft, Share2 } from 'lucide-react';
 
 export interface LegalFooterModalProps {
   externalModal?: 'terms' | 'privacy' | 'combined' | null;
   onCloseExternal?: () => void;
+  logoUrl?: string | null;
 }
+
+const ShareFilesBrand: React.FC<{
+  logoUrl?: string | null;
+  subtitle?: string;
+  size?: 'sm' | 'md';
+}> = ({ logoUrl, subtitle, size = 'sm' }) => {
+  const [hasError, setHasError] = useState(false);
+  const effectiveSrc = logoUrl || '/logo-512.png';
+
+  const logoDims = size === 'sm' ? 'w-6 h-6 sm:w-7 sm:h-7' : 'w-9 h-9 sm:w-10 sm:h-10';
+  const iconDims = size === 'sm' ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-5 h-5';
+  const textClass = size === 'sm' ? 'text-xs sm:text-sm' : 'text-sm sm:text-base';
+
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className={`${logoDims} bg-accent rounded-xl flex items-center justify-center shadow-md shadow-accent/25 overflow-hidden shrink-0`}>
+        {!hasError ? (
+          <img
+            src={effectiveSrc}
+            alt="Share Files Logo"
+            className="w-full h-full object-cover"
+            onError={() => setHasError(true)}
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <Share2 className={`${iconDims} text-black stroke-[2.5]`} />
+        )}
+      </div>
+      <div className="flex flex-col">
+        <span className={`font-display font-black ${textClass} tracking-tight text-white uppercase`}>
+          SHARE <span className="text-accent">FILES</span>
+        </span>
+        {subtitle && (
+          <span className="text-[10px] text-zinc-400 font-medium line-clamp-1">
+            {subtitle}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
   externalModal = null,
   onCloseExternal,
+  logoUrl = null,
 }) => {
   const [activeModal, setActiveModal] = useState<'terms' | 'privacy' | 'combined' | null>(null);
   const [combinedStep, setCombinedStep] = useState<'terms' | 'privacy'>('terms');
@@ -104,10 +147,28 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Slim Header & Stepper */}
-            <div className="px-4 sm:px-6 py-2.5 sm:py-3.5 border-b border-white/10 bg-zinc-950/95 shrink-0">
+            <div className="px-4 sm:px-6 py-2.5 sm:py-3 border-b border-white/10 bg-zinc-950/95 shrink-0">
+              {/* Share Files Logo & Branding Header */}
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                <ShareFilesBrand 
+                  logoUrl={logoUrl} 
+                  subtitle="Zero-Knowledge Secure File Sharing Protocol" 
+                  size="sm" 
+                />
+                <button
+                  id="btn-close-combined-legal"
+                  onClick={handleClose}
+                  className="p-1.5 sm:p-2 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+              </div>
+
+              {/* Current Document Step Indicator */}
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center border shrink-0 transition-colors ${
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center border shrink-0 transition-colors ${
                     combinedStep === 'terms' 
                       ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' 
                       : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
@@ -138,15 +199,6 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
                     </p>
                   </div>
                 </div>
-
-                <button
-                  id="btn-close-combined-legal"
-                  onClick={handleClose}
-                  className="p-1.5 sm:p-2 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                  title="Close"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
 
               {/* Slim 2-Step Segmented Bar */}
@@ -185,6 +237,18 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
             >
               {combinedStep === 'terms' ? (
                 <div className="space-y-4 sm:space-y-5 max-w-4xl mx-auto">
+                  {/* Share Files Brand Header above Terms */}
+                  <div className="p-3 sm:p-4 rounded-2xl bg-zinc-950/80 border border-white/10 flex items-center justify-between gap-3 shadow-md">
+                    <ShareFilesBrand 
+                      logoUrl={logoUrl} 
+                      subtitle="Official Terms & Conditions Agreement • Zero-Liability Policy" 
+                      size="md" 
+                    />
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+                      Zero Liability
+                    </span>
+                  </div>
+
                   {/* Highlight Box */}
                   <div className="p-4 sm:p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 sm:gap-4 shadow-lg shadow-amber-500/5">
                     <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
@@ -255,6 +319,18 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
                 </div>
               ) : (
                 <div className="space-y-4 sm:space-y-5 max-w-4xl mx-auto">
+                  {/* Share Files Brand Header above Privacy Policy */}
+                  <div className="p-3 sm:p-4 rounded-2xl bg-zinc-950/80 border border-white/10 flex items-center justify-between gap-3 shadow-md">
+                    <ShareFilesBrand 
+                      logoUrl={logoUrl} 
+                      subtitle="Official Privacy Policy & Data Minimization Protocol" 
+                      size="md" 
+                    />
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shrink-0">
+                      Encrypted P2P
+                    </span>
+                  </div>
+
                   {/* Privacy Highlight Box */}
                   <div className="p-4 sm:p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3 sm:gap-4 shadow-lg shadow-emerald-500/5">
                     <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
@@ -405,10 +481,28 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
             className="relative w-full max-w-5xl h-full sm:h-[92vh] sm:max-h-[92vh] flex flex-col bg-zinc-900 border-0 sm:border border-white/15 rounded-none sm:rounded-3xl shadow-2xl overflow-hidden text-zinc-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Slim Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 bg-zinc-950/90 shrink-0">
+            {/* Slim Header with Share Files Branding */}
+            <div className="px-4 sm:px-6 py-2.5 sm:py-3 border-b border-white/10 bg-zinc-950/90 shrink-0">
+              {/* Top Brand Bar */}
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                <ShareFilesBrand 
+                  logoUrl={logoUrl} 
+                  subtitle="Zero-Knowledge Secure File Sharing Protocol" 
+                  size="sm" 
+                />
+                <button
+                  id="btn-close-terms"
+                  onClick={handleClose}
+                  className="p-1.5 sm:p-2 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+              </div>
+
+              {/* Title */}
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 shrink-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 shrink-0">
                   <FileText className="w-4 h-4" />
                 </div>
                 <div>
@@ -416,18 +510,22 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
                   <p className="text-[11px] text-zinc-400 hidden sm:block">Zero-Liability & User Accountability Agreement</p>
                 </div>
               </div>
-              <button
-                id="btn-close-terms"
-                onClick={handleClose}
-                className="p-1.5 sm:p-2 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                title="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
             {/* Content Body */}
             <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 sm:py-6 space-y-4 sm:space-y-6 text-zinc-200 leading-relaxed max-w-4xl mx-auto w-full">
+              {/* Share Files Brand Header above Terms */}
+              <div className="p-3 sm:p-4 rounded-2xl bg-zinc-950/80 border border-white/10 flex items-center justify-between gap-3 shadow-md">
+                <ShareFilesBrand 
+                  logoUrl={logoUrl} 
+                  subtitle="Official Terms & Conditions Agreement • Zero-Liability Policy" 
+                  size="md" 
+                />
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+                  Zero Liability
+                </span>
+              </div>
+
               {/* Highlight Box */}
               <div className="p-4 sm:p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 sm:gap-4">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
@@ -524,10 +622,28 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
             className="relative w-full max-w-5xl h-full sm:h-[92vh] sm:max-h-[92vh] flex flex-col bg-zinc-900 border-0 sm:border border-white/15 rounded-none sm:rounded-3xl shadow-2xl overflow-hidden text-zinc-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Slim Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 bg-zinc-950/90 shrink-0">
+            {/* Slim Header with Share Files Branding */}
+            <div className="px-4 sm:px-6 py-2.5 sm:py-3 border-b border-white/10 bg-zinc-950/90 shrink-0">
+              {/* Top Brand Bar */}
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                <ShareFilesBrand 
+                  logoUrl={logoUrl} 
+                  subtitle="Zero-Knowledge Secure File Sharing Protocol" 
+                  size="sm" 
+                />
+                <button
+                  id="btn-close-privacy"
+                  onClick={handleClose}
+                  className="p-1.5 sm:p-2 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+              </div>
+
+              {/* Title */}
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
                   <Lock className="w-4 h-4" />
                 </div>
                 <div>
@@ -535,18 +651,22 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
                   <p className="text-[11px] text-zinc-400 hidden sm:block">Zero Data Tracking & P2P Architecture</p>
                 </div>
               </div>
-              <button
-                id="btn-close-privacy"
-                onClick={handleClose}
-                className="p-1.5 sm:p-2 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                title="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
             {/* Content Body */}
             <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 sm:py-6 space-y-4 sm:space-y-6 text-zinc-200 leading-relaxed max-w-4xl mx-auto w-full">
+              {/* Share Files Brand Header above Privacy Policy */}
+              <div className="p-3 sm:p-4 rounded-2xl bg-zinc-950/80 border border-white/10 flex items-center justify-between gap-3 shadow-md">
+                <ShareFilesBrand 
+                  logoUrl={logoUrl} 
+                  subtitle="Official Privacy Policy & Data Minimization Protocol" 
+                  size="md" 
+                />
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shrink-0">
+                  Encrypted P2P
+                </span>
+              </div>
+
               {/* Highlight Box */}
               <div className="p-4 sm:p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3 sm:gap-4">
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
