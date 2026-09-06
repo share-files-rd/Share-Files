@@ -87,6 +87,8 @@ import { generateLogo } from './services/logoGenerator';
 import { copyToClipboard } from './utils/clipboard';
 import OfflineP2PShare from './components/OfflineP2PShare';
 import OppoFileDock from './components/OppoFileDock';
+import { getApiUrl } from './config/api';
+import { LegalFooterModal } from './components/LegalFooterModal';
 
 // --- Types ---
 declare global {
@@ -158,7 +160,7 @@ interface Activity {
 }
 
 // --- Constants ---
-const GUEST_LIMIT = 1 * 1024 * 1024 * 1024; // 1GB
+const GUEST_LIMIT = 5 * 1024 * 1024 * 1024; // 5GB
 const PRO_LIMIT = 20 * 1024 * 1024 * 1024; // 20GB
 
 // --- Components ---
@@ -827,6 +829,7 @@ export default function App() {
   const [editingFolder, setEditingFolder] = useState<FolderMetadata | null>(null);
   const [movingFile, setMovingFile] = useState<FileMetadata | null>(null);
   const [showDeleteFolderConfirm, setShowDeleteFolderConfirm] = useState<FolderMetadata | null>(null);
+  const [showLegalModal, setShowLegalModal] = useState<'terms' | 'privacy' | 'combined' | null>(null);
   
   const getProviderName = () => {
     if (user) {
@@ -962,10 +965,7 @@ export default function App() {
     const checkLatency = async () => {
       const start = performance.now();
       try {
-        // Use absolute URL to avoid issues in some iframe environments
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/ping?t=${Date.now()}`, {
-          mode: 'same-origin',
+        const response = await fetch(getApiUrl(`/api/ping?t=${Date.now()}`), {
           cache: 'no-store'
         });
         
@@ -1054,6 +1054,7 @@ export default function App() {
     setGuestSession(session);
     setIsGuestMode(true);
     setView('vault');
+    setShowLegalModal('combined');
     
     // Automatically set a guest name if not provided
     if (!userName) {
@@ -1104,6 +1105,11 @@ export default function App() {
       setLoading(false);
       if (u) {
         localStorage.setItem('app_session_started', 'true');
+        const sessionLegalKey = `post_login_legal_${u.uid}`;
+        if (sessionStorage.getItem(sessionLegalKey) !== 'shown') {
+          sessionStorage.setItem(sessionLegalKey, 'shown');
+          setShowLegalModal('combined');
+        }
         
         // If user was previously using a guest session, seamlessly migrate all guest files to the user's permanent account
         const storedGuest = localStorage.getItem('guest_session');
@@ -1284,6 +1290,7 @@ export default function App() {
       setView('vault');
       setEmail('');
       setPassword('');
+      setShowLegalModal('combined');
     } catch (err: any) {
       console.error('Email auth failed', err);
       setLoginError(err.message || 'Authentication failed. Please check your credentials.');
@@ -1314,6 +1321,7 @@ export default function App() {
       const result = await signInWithPopup(auth, provider);
       console.log(`${method} Login successful:`, result.user.email);
       setView('vault');
+      setShowLegalModal('combined');
     } catch (err: any) {
       console.error(`${method} Login failed`, err);
       // Handle specific cancellation or configuration errors
@@ -1325,6 +1333,7 @@ export default function App() {
     // For now, simulate login success for the UI request
     setIsGuestMode(true);
     setView('vault');
+    setShowLegalModal('combined');
     setComingSoonError("APPLE LOGIN SIMULATED (GUEST MODE)");
     setTimeout(() => setComingSoonError(null), 3000);
   };
@@ -1332,6 +1341,7 @@ export default function App() {
   const facebookLogin = async () => {
     setIsGuestMode(true);
     setView('vault');
+    setShowLegalModal('combined');
     setComingSoonError("FACEBOOK LOGIN SIMULATED (GUEST MODE)");
     setTimeout(() => setComingSoonError(null), 3000);
   };
@@ -1339,6 +1349,7 @@ export default function App() {
   const githubLogin = async () => {
     setIsGuestMode(true);
     setView('vault');
+    setShowLegalModal('combined');
     setComingSoonError("GITHUB LOGIN SIMULATED (GUEST MODE)");
     setTimeout(() => setComingSoonError(null), 3000);
   };
@@ -1350,6 +1361,8 @@ export default function App() {
       setIsGuestMode(false);
       localStorage.removeItem('guest_session');
       localStorage.removeItem('app_session_started');
+      sessionStorage.clear();
+      setShowLegalModal(null);
       setGuestSession(null);
       setView('landing');
     } catch (err) {
@@ -1388,7 +1401,9 @@ export default function App() {
     const xhr = new XMLHttpRequest();
     const formData = new FormData();
     formData.append('files', file);
-    const ownerId = user ? user.uid : (guestSession?.id || 'anonymous');
+    // Ensure ownerId matches security rules (^guest-.* for unauthenticated users)
+    const effectiveGuestId = guestSession?.id || `guest-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 12)}`;
+    const ownerId = user ? user.uid : effectiveGuestId;
     formData.append('isGuest', (!user).toString());
     formData.append('uploaderName', userName || 'Unknown User');
 
@@ -1465,7 +1480,7 @@ export default function App() {
             size: response.size,
             type: response.type,
             ownerId: ownerId,
-            downloadUrl: `/api/download/${response.id}`,
+            downloadUrl: getApiUrl(`/api/download/${response.id}`),
             isPublic: true,
             createdAt: response.createdAt,
             isGuest: response.isGuest,
@@ -1483,9 +1498,11 @@ export default function App() {
             setUploads(prev => prev.filter(u => u.id !== uploadId));
           }, 3000);
         } catch (e) {
-          console.error('Failed to parse upload response', e);
+          console.error('Failed to parse upload response or save metadata', e);
+          setUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'error' } : u));
         }
       } else {
+        console.error('Upload HTTP failed with status', xhr.status, xhr.statusText);
         setUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'error' } : u));
       }
       isUploading.current = false;
@@ -1493,13 +1510,14 @@ export default function App() {
       processQueue();
     };
 
-    xhr.onerror = () => {
+    xhr.onerror = (e) => {
+      console.error('Upload network error', e);
       setUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'error' } : u));
       isUploading.current = false;
       processQueue();
     };
 
-    xhr.open('POST', '/api/upload');
+    xhr.open('POST', getApiUrl('/api/upload'));
     xhr.send(formData);
   };
 
@@ -1510,7 +1528,7 @@ export default function App() {
     
     const totalNewSize = filesArray.reduce((acc, f) => acc + f.size, 0);
     if (currentUsage + totalNewSize > limit) {
-      alert(`Storage limit reached! ${user ? '20GB' : '1GB'} max.`);
+      alert(`Storage limit reached! ${user ? '20GB' : '5GB'} max.`);
       return;
     }
 
@@ -1657,7 +1675,7 @@ export default function App() {
       await deleteDoc(doc(db, 'files', fileId));
       
       // Delete from Server
-      await fetch(`/api/delete/${fileId}`, { method: 'DELETE' });
+      await fetch(getApiUrl(`/api/delete/${fileId}`), { method: 'DELETE' });
       
       if (fileToDelete) addActivity('delete', fileToDelete.name);
     } catch (err) {
@@ -1676,7 +1694,7 @@ export default function App() {
         // Delete from Firestore
         await deleteDoc(doc(db, 'files', id));
         // Delete from Server
-        await fetch(`/api/delete/${id}`, { method: 'DELETE' });
+        await fetch(getApiUrl(`/api/delete/${id}`), { method: 'DELETE' });
         
         if (fileToDelete) addActivity('delete', fileToDelete.name);
       }));
@@ -2165,7 +2183,7 @@ export default function App() {
                       <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
                         <HardDrive className="w-4 h-4" />
                       </div>
-                      <span className="text-[10px] font-bold text-zinc-400">{Math.round(totalUsed / 1024 / 1024)}MB / {Math.round(limit / 1024 / 1024)}MB</span>
+                      <span className="text-[10px] font-bold text-zinc-400">{formatSize(totalUsed)} / {formatSize(limit)}</span>
                     </div>
                     <div className="w-full space-y-1">
                       <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
@@ -3801,7 +3819,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setIsGuestMode(true);
+                      startGuestSession();
                       setShowEmailAuthModal(false);
                     }}
                     className="text-accent hover:underline font-semibold"
@@ -4015,6 +4033,12 @@ export default function App() {
         className="hidden" 
         id="global-file-upload-input"
         aria-label="Upload files"
+      />
+
+      {/* Terms and Conditions & Privacy Policy Legal Footer */}
+      <LegalFooterModal 
+        externalModal={showLegalModal} 
+        onCloseExternal={() => setShowLegalModal(null)} 
       />
       </div>
     </ErrorBoundary>

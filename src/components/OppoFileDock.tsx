@@ -357,7 +357,7 @@ export default function OppoFileDock({ onSendP2P, onUploadToVault, cloudFilesCou
                   <textarea
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
-                    placeholder="Koi text note ya copy code paste karke file banayein..."
+                    placeholder="Paste text notes, snippets, or code to save as a file..."
                     className="w-full bg-black/50 border border-white/5 rounded-xl p-3 text-xs text-zinc-300 placeholder-zinc-700 min-h-[70px] focus:outline-none focus:border-accent resize-none transition-all font-sans"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.ctrlKey) {
@@ -417,7 +417,7 @@ export default function OppoFileDock({ onSendP2P, onUploadToVault, cloudFilesCou
                       <Layers className="w-7 h-7 mx-auto text-zinc-600 animate-pulse" />
                       <p className="text-[10px] font-bold uppercase tracking-wider">File Dock is empty</p>
                       <p className="text-[9px] text-zinc-500 leading-relaxed uppercase tracking-widest max-w-[200px] mx-auto font-medium">
-                        Files ko screen ke upar drag and drop karein ya manually upload karein shelf me add karne ke liye!
+                        Drag and drop files anywhere on the screen or browse files to add them to your shelf!
                       </p>
                     </div>
                   ) : (

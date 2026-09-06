@@ -10,6 +10,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { cn } from '../utils/cn';
 import { generateMelodyCatalog, playSynthesizedKrishnaFlute, stopAllFluteSounds, KrishnaMelody } from '../utils/fluteSynth';
 import { copyToClipboard } from '../utils/clipboard';
+import { getWsUrl } from '../config/api';
 
 interface ConnectionPeer {
   id: string;
@@ -261,8 +262,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
 
   // Setup WebSocket room signaling lane
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}`;
+    const wsUrl = getWsUrl();
     const socket = new WebSocket(wsUrl);
     signalSocketRef.current = socket;
 
@@ -970,7 +970,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
   // --- 6 SECURE PIN PAIRING LOGICS ---
   const handlePinPairSubmit = () => {
     if (enteredPin.length !== 6) {
-      alert('Pehle sahi 6 digit dynamic target PIN code type karein!');
+      alert('Please enter a valid 6-digit PIN code!');
       return;
     }
 
@@ -1000,7 +1000,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
           setTransferStatus('negotiating');
         }
       } else {
-        alert('PIN code and device handshake verify nahi hua! Kripya check karein ki dono devices is page par open hain.');
+        alert('PIN code verification failed! Please make sure both devices have this page open.');
       }
     }
   };
@@ -1053,7 +1053,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
   const submitOffGridOffer = async () => {
     const offerObj = parseShareableSignal(remoteSdpInput);
     if (!offerObj || offerObj.type !== 'offer') {
-      alert('Offer Code invalid hai! Kripya copy properly karke try karein.');
+      alert('Invalid Offer code! Please copy and paste the complete signaling code.');
       return;
     }
 
@@ -1088,7 +1088,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
   const submitOffGridAnswer = async () => {
     const answerObj = parseShareableSignal(remoteSdpInput);
     if (!answerObj || answerObj.type !== 'answer') {
-      alert('Answer Code galat hai flag reset karein!');
+      alert('Invalid Answer code! Please verify the code and try again.');
       return;
     }
 
@@ -1145,7 +1145,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
               OFFLINE P2P SHARE
             </h1>
             <p className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase leading-relaxed">
-              Dono devices ko same website par open rakhein aur bina extra network usage ke instant files transfer karein!
+              Keep both devices open on this page to transfer files directly with zero server storage and ultra-fast speed!
             </p>
           </div>
 
@@ -1203,10 +1203,10 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
               {transferStatus === 'negotiating' ? (
                 <div className="space-y-4">
                   <RefreshCw className="w-12 h-12 text-accent animate-spin mx-auto animate-reverse-slow" />
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-white">Shaking hands with peer...</h3>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white">Connecting with peer...</h3>
                   <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-relaxed">
-                    Direct handshaking active. WebRTC tunnel align ho raha hai. <br />
-                    <span className="text-zinc-400">Router blockage detect hone par socket fallback process execute hoga.</span>
+                    Direct handshake active. Establishing WebRTC peer tunnel... <br />
+                    <span className="text-zinc-400">If direct connection is blocked by local network, socket relay fallback will engage.</span>
                   </p>
                 </div>
               ) : (
@@ -1231,7 +1231,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
 
                   <div className="space-y-2">
                     <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                      Channel Link: {transportMode === 'webrtc' ? '⚡ Direct WebRTC direct Line' : '🩹 Cloud socket streaming Relay'}
+                      Channel Link: {transportMode === 'webrtc' ? '⚡ Direct WebRTC Line' : '🩹 Cloud Socket Streaming Relay'}
                     </p>
                     <h3 className="text-sm font-bold text-white truncate max-w-md mx-auto">{currentFileName}</h3>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
@@ -1270,16 +1270,16 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-display font-black text-white uppercase tracking-tight">FILE RECEIVED & DOWNLOADED!</h3>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">P2P process successful</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">P2P transfer complete</p>
               </div>
               <p className="text-[11px] leading-relaxed text-zinc-400 font-medium uppercase tracking-wider max-w-sm mx-auto">
-                File transfer Bina server dependency ke offline direct stream block compile ho chuki hai!
+                File streamed directly peer-to-peer without server storage dependency!
               </p>
               <button
                 onClick={cleanupWebRTC}
                 className="px-8 py-4 bg-white text-black font-black uppercase text-[10px] tracking-[0.25em] rounded-xl hover:bg-zinc-100 transition-all active:scale-95"
               >
-                Okay
+                Done
               </button>
             </motion.div>
           ) : transferStatus === 'error' ? (
@@ -1294,17 +1294,17 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                 <AlertCircle className="w-6 h-6" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-base font-bold uppercase tracking-wider text-white">Transit Interrupt hua</h3>
-                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest">WebRTC pipeline handshaking fails</p>
+                <h3 className="text-base font-bold uppercase tracking-wider text-white">Transfer Interrupted</h3>
+                <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest">WebRTC pipeline handshake failed</p>
               </div>
               <p className="text-[11px] text-zinc-400 max-w-xs mx-auto leading-relaxed uppercase tracking-wider font-medium">
-                Make sure ki dono targets stable networks par is dashboard popup window ko active rakhein.
+                Please ensure both devices remain active on this page with stable network connectivity.
               </p>
               <button
                 onClick={cleanupWebRTC}
                 className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
               >
-                Reset Engine
+                Reset Connection
               </button>
             </motion.div>
           ) : sharingMode === 'wifi' ? (
@@ -1325,7 +1325,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                     1. Choose File to Stream
                   </h3>
                   <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                    Local Device Storage se koi bhi file choose karein
+                    Select any file from your device storage
                   </p>
                 </div>
 
@@ -1350,7 +1350,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                   ) : (
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold text-white uppercase tracking-widest">Select Files</p>
-                      <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest">Bina size limits block transfer</p>
+                      <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest">Direct peer transfer with no file size limits</p>
                     </div>
                   )}
                 </div>
@@ -1371,7 +1371,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                 <div className="space-y-1.5">
                   <h3 className="text-sm font-black uppercase tracking-wider text-white">2. Select Target Device</h3>
                   <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                    Neeche auto scan lists se target user click karein
+                    Select a target device from the discovered peers list below
                   </p>
                 </div>
 
@@ -1388,7 +1388,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold text-white uppercase tracking-widest animate-pulse">Scanning WiFi Mesh room...</p>
                         <p className="text-[9px] text-zinc-400 uppercase tracking-wider font-bold leading-relaxed max-w-sm">
-                          Dono mobiles par is screen ko open rakhiye! Device automatic screen radar par crash free connect ho jayega.
+                          Keep this screen open on both devices! Nearby devices will automatically appear on radar.
                         </p>
                       </div>
                     </div>
@@ -1409,7 +1409,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                             </div>
                             <div>
                               <p className="text-xs font-bold text-white uppercase tracking-wider">{peer.name}</p>
-                              <p className="text-[8px] font-black text-accent uppercase tracking-widest">READY AT LOCAL ROOM</p>
+                              <p className="text-[8px] font-black text-accent uppercase tracking-widest">READY IN LOCAL ROOM</p>
                             </div>
                           </div>
                           
@@ -1429,7 +1429,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                   <div className="pt-4 border-t border-white/5 flex items-center gap-3">
                     <Info className="w-5 h-5 text-zinc-500 shrink-0" />
                     <p className="text-[9px] text-zinc-400 leading-relaxed font-bold uppercase">
-                      Dual Tunnel: <span className="text-zinc-500">WiFi direct router bandwidth direct capability use karta hai. Fast and lossless.</span>
+                      Dual Tunnel: <span className="text-zinc-500">Utilizes direct local router network bandwidth. Ultra-fast and lossless.</span>
                     </p>
                   </div>
                 </div>
@@ -1437,7 +1437,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
             </motion.div>
           ) : sharingMode === 'pin' ? (
             
-            /* --- OPTION 2: 6-DIGIT SECURE PIN SYNC (BRAND NEW MASTERPIECE) --- */
+            /* --- OPTION 2: 6-DIGIT SECURE PIN SYNC --- */
             <motion.div 
               key="pin_matching"
               initial={{ opacity: 0, y: 15 }}
@@ -1457,7 +1457,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                     <div>
                       <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">GENERATE HOST PIN</h3>
                       <p className="text-[8px] uppercase tracking-wider text-zinc-400 pt-1 leading-relaxed max-w-[200px]">
-                        Apna safety PIN generator chalu karein aur file select karein
+                        Start secure PIN generator and select file to send
                       </p>
                     </div>
                   </div>
@@ -1472,7 +1472,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                     <div>
                       <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">ENTER PASSKEY PIN</h3>
                       <p className="text-[8px] uppercase tracking-wider text-zinc-400 pt-1 leading-relaxed max-w-[200px]">
-                        Dusre device par show ho raha code enter karke sync ho jayein
+                        Enter the 6-digit PIN displayed on the other device to connect
                       </p>
                     </div>
                   </div>
@@ -1492,7 +1492,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                   </div>
 
                   <p className="text-[10px] text-zinc-400 tracking-wider font-bold max-w-sm mx-auto leading-relaxed">
-                    Neeche file stream select karke receiver device par ye PIN enter karne ko boleim:
+                    Select a file below and enter this 6-digit PIN on the receiving device:
                   </p>
 
                   <div className="max-w-md mx-auto text-left space-y-4">
@@ -1508,7 +1508,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                       {pinFileToSend ? (
                         <p className="text-xs font-bold text-accent truncate">{pinFileToSend.name} selected</p>
                       ) : (
-                        <p className="text-[9px] font-black uppercase tracking-wider text-zinc-500">File specify karein</p>
+                        <p className="text-[9px] font-black uppercase tracking-wider text-zinc-500">Select file to send</p>
                       )}
                     </div>
 
@@ -1529,7 +1529,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                     ENTER PIN PASSKEY
                   </h3>
                   <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                    Sender device ke screen par dikh raha 6-digit number enter karein:
+                    Enter the 6-digit PIN displayed on the sender device's screen:
                   </p>
 
                   <div className="max-w-xs mx-auto space-y-4">
@@ -1546,7 +1546,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                       disabled={enteredPin.length !== 6}
                       className="w-full py-4 bg-white hover:bg-zinc-100 text-black disabled:bg-zinc-800 disabled:text-zinc-500 rounded-xl text-[10px] font-black uppercase tracking-widest tracking-[0.2em] transition-all"
                     >
-                      PIN SE PAIR COMPREHEND KAREIN
+                      PAIR & CONNECT WITH PIN
                     </button>
                   </div>
                 </div>
@@ -1638,7 +1638,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                           <p className="text-xs font-bold text-accent truncate max-w-sm">{chirpFileToSend.name}</p>
                         </div>
                       ) : (
-                        <p className="text-[9px] font-black uppercase tracking-wider text-zinc-500 hover:text-zinc-450">Aapki file attach karein (Optional test mode active without file)</p>
+                        <p className="text-[9px] font-black uppercase tracking-wider text-zinc-500 hover:text-zinc-400">Attach a file (Optional test mode active without file)</p>
                       )}
                     </div>
 
@@ -1896,7 +1896,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                         <div className="space-y-1.5">
                           <p className="text-xs text-white uppercase tracking-widest font-black">Microphone Listening Enabled...</p>
                           <p className="text-[9px] text-zinc-400 uppercase tracking-widest max-w-sm mx-auto font-medium leading-relaxed">
-                            Aapke partner speaker ke paas headphones ya phone pass laayein aur "PLAY KRISHNA BANSURI SYNC BEACON" synchronizer melody bajaayein!
+                            Hold your device close to the sender's speaker and play the sync beacon melody to pair!
                           </p>
                         </div>
                       </>
@@ -1993,9 +1993,9 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                       <Upload className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">FILE SEND KAREIN</h3>
+                      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">SEND FILE</h3>
                       <p className="text-[8px] uppercase tracking-wider text-zinc-500 pt-1 leading-relaxed">
-                        SDP offer exchange system ke through QR compile karke start karein
+                        Generate QR code and signaling offer for direct transfer
                       </p>
                     </div>
                   </div>
@@ -2008,9 +2008,9 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                       <Download className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">FILE RECEIVE KAREIN</h3>
+                      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white">RECEIVE FILE</h3>
                       <p className="text-[8px] uppercase tracking-wider text-zinc-500 pt-1 leading-relaxed">
-                        Sender device ka offer envelope read karke answers generate karein
+                        Scan or paste sender offer to generate answer
                       </p>
                     </div>
                   </div>
@@ -2027,7 +2027,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                           STEP A: SCAN SENDER BEACON
                         </h3>
                         <p className="text-[10px] uppercase text-zinc-400 tracking-wider font-bold max-w-sm mx-auto leading-relaxed">
-                          Receiver device par "FILE RECEIVE KAREIN" dabayein aur is code ko copy-paste properly feed karein:
+                          On the receiving device, click "RECEIVE FILE" and scan or paste this code:
                         </p>
 
                         {localSdpCode ? (
@@ -2064,14 +2064,14 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                       <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-white">STEP B: SUBMIT RECEIVER ANSWER ENVELOPE</h3>
                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                          Receiver screen par generate hua 'Answer code' yahan paste karein:
+                          Paste the Answer code generated on the receiving device here:
                         </p>
 
                         <div className="space-y-4">
                           <textarea
                             value={remoteSdpInput}
                             onChange={(e) => setRemoteSdpInput(e.target.value)}
-                            placeholder="Receiver's code paste karein..."
+                            placeholder="Paste Receiver's Answer code here..."
                             className="w-full bg-black/50 border border-white/10 rounded-2xl p-4 text-[10px] font-mono text-zinc-300 placeholder-zinc-700 min-h-[90px] focus:outline-none"
                           />
                           <button
@@ -2097,14 +2097,14 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                         STEP A: PASTE SENDER'S BEACON CODE
                       </h3>
                       <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
-                        Sender waale mobile screen par show ho raha link envelope paste karein:
+                        Paste the Offer signaling code displayed on the sender device's screen:
                       </p>
 
                       <div className="space-y-4">
                         <textarea
                           value={remoteSdpInput}
                           onChange={(e) => setRemoteSdpInput(e.target.value)}
-                          placeholder="Sender's Signaling Code yahan paste karein..."
+                          placeholder="Paste Sender's Signaling Code here..."
                           className="w-full bg-black/50 border border-white/10 rounded-2xl p-4 text-[10px] font-mono text-zinc-300 placeholder-zinc-700 min-h-[120px] focus:outline-none"
                         />
                         <button
@@ -2123,7 +2123,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                         STEP B: ANSWER ENVELOPE GENEREATED
                       </h3>
                       <p className="text-[10px] uppercase text-zinc-500 tracking-wider font-bold max-w-sm mx-auto leading-relaxed">
-                        Neeche aa rahe code ko copy karke wapas Sender device block par enter karein taki mesh tunnel instantly boot ho sake.
+                        Copy the code below and paste it back on the Sender device to initialize the direct peer tunnel.
                       </p>
 
                       {localSdpCode ? (
@@ -2151,7 +2151,7 @@ export default function OfflineP2PShare({ onClose, currentUserDisplayName, initi
                           <div className="pt-4 border-t border-white/5 space-y-2">
                             <AlertTriangle className="w-5 h-5 text-amber-500 mx-auto" />
                             <p className="text-[9px] text-zinc-500 uppercase tracking-widest max-w-md mx-auto font-black leading-relaxed">
-                              Dono mobile side validation hone tak isi layout screen par lock rahiye, connection secure trigger automatic ho jayega!
+                              Keep this screen open on both devices until connection is confirmed; direct transfer will begin automatically!
                             </p>
                           </div>
                         </div>
