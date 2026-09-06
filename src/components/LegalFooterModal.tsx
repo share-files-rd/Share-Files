@@ -95,7 +95,7 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
   return (
     <>
       {/* Bottom Footer Section */}
-      <footer id="app-legal-footer" className="w-full mt-16 pt-8 pb-12 border-t border-white/10 text-zinc-400">
+      <footer id="app-legal-footer" className="w-full mt-16 pt-8 pb-32 border-t border-white/10 text-zinc-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 font-medium">
@@ -131,7 +131,7 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-3 text-[11px] text-zinc-500 text-center md:text-left">
-          Disclaimer: This application provides encrypted peer-to-peer data transport. Users are solely responsible for all transmitted files, content, and local retention. We hold zero liability for data compromise, accidental leaks, or loss.
+          Disclaimer: This application provides encrypted peer-to-peer data transport. Users are solely responsible for all transmitted files, content, and local retention. The developer holds ZERO liability for any malware, viruses, illegal sharing, confidential data leaks, or data compromise. By using this platform, you agree that the developer is not responsible or liable for any damages.
         </div>
       </footer>
 
@@ -257,7 +257,7 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
                     <div className="space-y-1">
                       <h4 className="font-bold text-amber-300 text-sm sm:text-base">CRITICAL DISCLAIMER: ZERO LIABILITY POLICY</h4>
                       <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-                        By using this platform, you explicitly acknowledge and agree that the developers, owners, and operators assume <strong>zero legal, financial, or technical liability</strong> for any data loss, file leak, unauthorized interception, data corruption, or unintended exposure of your files and transfers.
+                        By using this platform, you explicitly acknowledge and agree that the developer assumes <strong>ZERO legal, financial, or technical liability</strong> for any data loss, confidential file leak, unauthorized interception, data corruption, or unintended exposure of your files. The developer is NOT responsible if any malware, virus, or illegal content is shared using this platform.
                       </p>
                     </div>
                   </div>
@@ -534,7 +534,7 @@ export const LegalFooterModal: React.FC<LegalFooterModalProps> = ({
                 <div className="space-y-1">
                   <h4 className="font-bold text-amber-300 text-sm sm:text-base">CRITICAL DISCLAIMER: ZERO LIABILITY</h4>
                   <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-                    By using this platform, you explicitly acknowledge and agree that the developers and platform operators assume zero legal, financial, or technical liability for any data loss, file leak, interception, corruption, or unintended exposure.
+                    By using this platform, you explicitly acknowledge and agree that the developer assumes <strong>ZERO</strong> legal, financial, or technical liability for any data loss, confidential file leak, interception, corruption, or unintended exposure. The developer takes no responsibility for any malware, virus, or illegal file sharing activities.
                   </p>
                 </div>
               </div>

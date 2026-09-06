@@ -827,6 +827,7 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [showEmailAuthModal, setShowEmailAuthModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [editingFolder, setEditingFolder] = useState<FolderMetadata | null>(null);
   const [movingFile, setMovingFile] = useState<FileMetadata | null>(null);
@@ -902,13 +903,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let checkInterval: any;
+
     const fetchDuckDnsViews = async () => {
       try {
         const statsRef = doc(db, 'stats', 'site');
         const snap = await getDoc(statsRef);
-        let currentViews = 0;
+        let baseViews = 0;
         if (snap.exists()) {
-          currentViews = snap.data().duckDnsViews || 0;
+          baseViews = snap.data().duckDnsViews || 0;
         }
 
         // Check if we need to increment based on host and session
@@ -916,18 +919,70 @@ export default function App() {
         const hasTrackedView = sessionStorage.getItem('duckdns_view_tracked');
 
         if (isDuckDns && !hasTrackedView) {
-          const newCount = currentViews + 1;
-          await updateDoc(statsRef, { duckDnsViews: newCount });
+          baseViews += 1;
+          await updateDoc(statsRef, { duckDnsViews: baseViews });
           sessionStorage.setItem('duckdns_view_tracked', 'true');
-          setDuckDnsViews(newCount);
-        } else {
-          setDuckDnsViews(currentViews);
         }
+
+        // --- Randomization Logic ---
+        let storedViewsStr = localStorage.getItem('duckdns_random_views');
+        let storedTimeStr = localStorage.getItem('duckdns_random_views_time');
+        let nextIntervalStr = localStorage.getItem('duckdns_random_views_interval');
+        
+        let storedViews = storedViewsStr ? parseInt(storedViewsStr, 10) : 0;
+        let storedTime = storedTimeStr ? parseInt(storedTimeStr, 10) : Date.now();
+        
+        const generateRandomInterval = () => {
+          const minMs = 15 * 60 * 1000;
+          const maxMs = 34 * 60 * 1000;
+          return Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+        };
+
+        let nextInterval = nextIntervalStr ? parseInt(nextIntervalStr, 10) : generateRandomInterval();
+
+        const saveToLocalStorage = (views: number, time: number, interval: number) => {
+          localStorage.setItem('duckdns_random_views', views.toString());
+          localStorage.setItem('duckdns_random_views_time', time.toString());
+          localStorage.setItem('duckdns_random_views_interval', interval.toString());
+        };
+
+        if (isNaN(storedViews) || storedViews < baseViews) {
+          // Initialize if it doesn't exist or base is higher
+          storedViews = baseViews + Math.floor(Math.random() * 200) + 50; 
+          storedTime = Date.now();
+          nextInterval = generateRandomInterval();
+          saveToLocalStorage(storedViews, storedTime, nextInterval);
+        }
+
+        const updateRandomViews = () => {
+          const now = Date.now();
+          const elapsed = now - storedTime;
+
+          if (elapsed >= nextInterval) {
+            // Jump randomly by e.g. 34+, 47+, 70+
+            const jump = Math.floor(Math.random() * 50) + 34;
+            storedViews += jump;
+            storedTime = now;
+            nextInterval = generateRandomInterval();
+            saveToLocalStorage(storedViews, storedTime, nextInterval);
+          }
+          setDuckDnsViews(storedViews);
+        };
+
+        // Initial update and state set
+        updateRandomViews();
+
+        // Periodic check
+        checkInterval = setInterval(updateRandomViews, 60000); // Check every minute
       } catch (err) {
         console.error('Failed to handle duckdns views:', err);
       }
     };
     fetchDuckDnsViews();
+
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+    };
   }, []);
 
   useEffect(() => {
@@ -1086,7 +1141,6 @@ export default function App() {
     setGuestSession(session);
     setIsGuestMode(true);
     setView('vault');
-    setShowLegalModal('combined');
     
     // Automatically set a guest name if not provided
     if (!userName) {
@@ -1137,11 +1191,6 @@ export default function App() {
       setLoading(false);
       if (u) {
         localStorage.setItem('app_session_started', 'true');
-        const sessionLegalKey = `post_login_legal_${u.uid}`;
-        if (sessionStorage.getItem(sessionLegalKey) !== 'shown') {
-          sessionStorage.setItem(sessionLegalKey, 'shown');
-          setShowLegalModal('combined');
-        }
         
         // If user was previously using a guest session, seamlessly migrate all guest files to the user's permanent account
         const storedGuest = localStorage.getItem('guest_session');
@@ -1322,7 +1371,6 @@ export default function App() {
       setView('vault');
       setEmail('');
       setPassword('');
-      setShowLegalModal('combined');
     } catch (err: any) {
       console.error('Email auth failed', err);
       setLoginError(err.message || 'Authentication failed. Please check your credentials.');
@@ -1353,7 +1401,6 @@ export default function App() {
       const result = await signInWithPopup(auth, provider);
       console.log(`${method} Login successful:`, result.user.email);
       setView('vault');
-      setShowLegalModal('combined');
     } catch (err: any) {
       console.error(`${method} Login failed`, err);
       // Handle specific cancellation or configuration errors
@@ -1365,7 +1412,6 @@ export default function App() {
     // For now, simulate login success for the UI request
     setIsGuestMode(true);
     setView('vault');
-    setShowLegalModal('combined');
     setComingSoonError("APPLE LOGIN SIMULATED (GUEST MODE)");
     setTimeout(() => setComingSoonError(null), 3000);
   };
@@ -1373,7 +1419,6 @@ export default function App() {
   const facebookLogin = async () => {
     setIsGuestMode(true);
     setView('vault');
-    setShowLegalModal('combined');
     setComingSoonError("FACEBOOK LOGIN SIMULATED (GUEST MODE)");
     setTimeout(() => setComingSoonError(null), 3000);
   };
@@ -1381,7 +1426,6 @@ export default function App() {
   const githubLogin = async () => {
     setIsGuestMode(true);
     setView('vault');
-    setShowLegalModal('combined');
     setComingSoonError("GITHUB LOGIN SIMULATED (GUEST MODE)");
     setTimeout(() => setComingSoonError(null), 3000);
   };
@@ -2151,7 +2195,7 @@ export default function App() {
                             Transfer History
                           </button>
                           <button 
-                            onClick={logout}
+                            onClick={() => setShowLogoutConfirm(true)}
                             className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
                           >
                             <LogOut className="w-4 h-4" />
@@ -3732,6 +3776,53 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLogoutConfirm(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-sm bg-[#0b0f19] border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center"
+            >
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+                <LogOut className="w-6 h-6 text-red-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Sign Out</h3>
+              <p className="text-sm text-zinc-400 mb-6">
+                Are you sure you want to log out? Your current session will be closed.
+              </p>
+              
+              <div className="w-full flex gap-3">
+                <button 
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-sm font-semibold transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowLogoutConfirm(false);
+                    logout();
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all"
+                >
+                  Yes, Log Out
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* App Login / Sign In Sheet */}
       <AnimatePresence>
         {showEmailAuthModal && (
@@ -4030,7 +4121,7 @@ export default function App() {
           <button 
             onClick={() => {
               if (user) {
-                logout();
+                setShowLogoutConfirm(true);
               } else {
                 setShowEmailAuthModal(true);
               }
