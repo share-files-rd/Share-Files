@@ -281,9 +281,24 @@ async function startServer() {
     });
   });
 
+  let fakeBase = Math.floor(Math.random() * 47) + 34; // Random initially 34 to 80
+
+  function scheduleNextFakeUpdate() {
+    const minMs = 15 * 60 * 1000; // 15 mins
+    const maxMs = 34 * 60 * 1000; // 34 mins
+    const nextInterval = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+
+    setTimeout(() => {
+      fakeBase = Math.floor(Math.random() * 56) + 30; // Randomly 30 to 85+
+      broadcastCount();
+      scheduleNextFakeUpdate();
+    }, nextInterval);
+  }
+  scheduleNextFakeUpdate();
+
   function broadcastCount() {
-    const count = activeUsers.size;
-    const message = JSON.stringify({ type: 'count', value: count });
+    const realCount = activeUsers.size;
+    const message = JSON.stringify({ type: 'count', value: realCount, fakeBase });
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message);

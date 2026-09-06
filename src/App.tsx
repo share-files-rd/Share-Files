@@ -801,6 +801,8 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
+  const [liveUsersInfo, setLiveUsersInfo] = useState<{ real: number, fake: number } | null>(null);
+  const [duckDnsViews, setDuckDnsViews] = useState<number | null>(null);
 
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('user_display_name') || 'Guest User');
   const [showNamePrompt, setShowNamePrompt] = useState(false);
@@ -870,6 +872,7 @@ export default function App() {
           const data = JSON.parse(event.data);
           if (data.type === 'count') {
             setVisitorCount(data.value);
+            setLiveUsersInfo({ real: data.value, fake: data.fakeBase || 0 });
           }
         } catch (err) {
           console.error('Failed to parse socket message:', err);
@@ -896,6 +899,35 @@ export default function App() {
       }
       clearTimeout(reconnectTimeout);
     };
+  }, []);
+
+  useEffect(() => {
+    const fetchDuckDnsViews = async () => {
+      try {
+        const statsRef = doc(db, 'stats', 'site');
+        const snap = await getDoc(statsRef);
+        let currentViews = 0;
+        if (snap.exists()) {
+          currentViews = snap.data().duckDnsViews || 0;
+        }
+
+        // Check if we need to increment based on host and session
+        const isDuckDns = window.location.hostname === 'share-files-rd.duckdns.org';
+        const hasTrackedView = sessionStorage.getItem('duckdns_view_tracked');
+
+        if (isDuckDns && !hasTrackedView) {
+          const newCount = currentViews + 1;
+          await updateDoc(statsRef, { duckDnsViews: newCount });
+          sessionStorage.setItem('duckdns_view_tracked', 'true');
+          setDuckDnsViews(newCount);
+        } else {
+          setDuckDnsViews(currentViews);
+        }
+      } catch (err) {
+        console.error('Failed to handle duckdns views:', err);
+      }
+    };
+    fetchDuckDnsViews();
   }, []);
 
   useEffect(() => {
@@ -1967,6 +1999,15 @@ export default function App() {
                   <p className="text-xs text-zinc-400 font-medium mt-1">
                     Fast Cloud Storage & Secure File Sharing
                   </p>
+
+                  <div className="mt-5 flex items-center justify-center gap-4 text-[10px] font-medium text-zinc-400">
+                    {liveUsersInfo !== null && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span><strong className="text-emerald-400">{liveUsersInfo.real + liveUsersInfo.fake}</strong> Live Users</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Login Action Buttons */}
@@ -2067,7 +2108,15 @@ export default function App() {
                         ShareFiles
                         <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-accent/20 text-accent font-bold">PRO</span>
                       </h1>
-                      <p className="text-[10px] text-zinc-400 font-medium">Fast Offline & Cloud Hub</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[10px] text-zinc-400 font-medium hidden sm:block">Fast Offline & Cloud Hub</p>
+                        {liveUsersInfo !== null && (
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-[9px] text-emerald-400 font-medium hidden sm:flex">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span><strong>{liveUsersInfo.real + liveUsersInfo.fake}</strong> online</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   

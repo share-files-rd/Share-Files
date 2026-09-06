@@ -34,7 +34,9 @@
       "description": "General website statistics",
       "type": "object",
       "properties": {
-        "visitorCount": { "type": "number", "description": "Total number of visitors" }
+        "visitorCount": { "type": "number", "description": "Total number of visitors" },
+        "duckDnsViews": { "type": "number", "description": "Total views for share-files-rd.duckdns.org" },
+        "liveUsers": { "type": "number", "description": "Real-time live active users count" }
       },
       "required": ["visitorCount"]
     },
