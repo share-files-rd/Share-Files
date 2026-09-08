@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://share-files-rd.duckdns.org/sitemap.xml
