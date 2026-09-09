@@ -1,0 +1,10 @@
+{
+  "name": "Vayor",
+  "description": "Vayor – The infinite ocean of ultra-fast file sharing, client-encrypted transfers, and cloud storage vault.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
