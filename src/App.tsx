@@ -626,7 +626,7 @@ function PublicDownloadPage({ shareId, logoUrl }: { shareId: string, logoUrl: st
         <button onClick={() => window.location.href = '/'} className="accent-button w-full">Go to Home</button>
       </div>
       <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em] mt-12">
-        Securely shared via Vayor 🌊
+        Securely shared via AirShare 🌊
       </p>
     </div>
   );
@@ -674,7 +674,7 @@ function PublicDownloadPage({ shareId, logoUrl }: { shareId: string, logoUrl: st
           </div>
         </motion.div>
         <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em] mt-12">
-          Securely shared via Vayor 🌊
+          Securely shared via AirShare 🌊
         </p>
       </div>
     );
@@ -800,7 +800,7 @@ function PublicDownloadPage({ shareId, logoUrl }: { shareId: string, logoUrl: st
               </motion.div>
             )}
             <p className="text-[9px] sm:text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em] pt-4">
-              Securely shared via Vayor 🌊
+              Securely shared via AirShare 🌊
             </p>
           </div>
         </motion.div>
@@ -2282,7 +2282,7 @@ export default function App() {
                     )}
                   </div>
                   <div className="py-1">
-                    <OceanWaveBrand name="VAYOR" badge="VAULT" size="xl" />
+                    <OceanWaveBrand name="AIRSHARE" badge="VAULT" size="xl" />
                   </div>
                   <h1 className="text-[11px] sm:text-xs text-zinc-300 font-semibold mt-0.5 tracking-wide">
                     Secure P2P Cloud Storage & AES-GCM Encrypted File Sharing
@@ -2435,7 +2435,7 @@ export default function App() {
                       )}
                     </div>
                     <div>
-                      <OceanWaveBrand name="VAYOR" badge="ETHER" size="sm" />
+                      <OceanWaveBrand name="AIRSHARE" badge="ETHER" size="sm" />
                       <div className="flex items-center gap-2">
                         <p className="text-[10px] text-zinc-400 font-medium hidden sm:block">Infinite Cloud & P2P Vault</p>
                         {liveUsersInfo !== null && (
@@ -4136,7 +4136,7 @@ export default function App() {
                       <h3 className="text-lg font-bold text-white flex items-center gap-2">
                         {isSignUp ? 'Create Account' : (
                           <>
-                            Welcome to <OceanWaveBrand name="VAYOR" size="sm" />
+                            Welcome to <OceanWaveBrand name="AIRSHARE" size="sm" />
                           </>
                         )}
                       </h3>

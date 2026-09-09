@@ -1,6 +1,6 @@
 {
-  "name": "Vayor – Secure P2P Cloud Storage & AES-GCM Encrypted File Sharing",
-  "description": "Vayor provides secure P2P cloud storage and client-side AES-GCM encrypted file sharing with zero file size limits and military-grade privacy.",
+  "name": "AirShare – Free Fast File Sharing, Secure P2P Transfer & Encrypted Cloud Storage",
+  "description": "AirShare is a high-speed file sharing website and secure P2P transfer tool with AES-GCM encrypted cloud storage, zero file size limits, and instant direct sharing.",
   "requestFramePermissions": [
     "microphone"
   ],

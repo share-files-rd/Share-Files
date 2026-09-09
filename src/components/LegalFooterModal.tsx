@@ -25,7 +25,7 @@ const ShareFilesBrand: React.FC<{
         {!hasError ? (
           <img
             src={effectiveSrc}
-            alt="Vayor Logo"
+            alt="AirShare Logo"
             className="w-full h-full object-cover"
             onError={() => setHasError(true)}
             referrerPolicy="no-referrer"
@@ -36,7 +36,7 @@ const ShareFilesBrand: React.FC<{
       </div>
       <div className="flex flex-col">
         <span className={`font-display font-black ${textClass} tracking-tight text-white uppercase`}>
-          VAY<span className="text-accent">OR</span>
+          AIR<span className="text-accent">SHARE</span>
         </span>
         {subtitle && (
           <span className="text-[10px] text-zinc-400 font-medium line-clamp-1">

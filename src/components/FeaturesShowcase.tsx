@@ -57,7 +57,7 @@ export const FeaturesShowcase: React.FC = () => {
     },
     {
       id: 'cloud-vault',
-      title: 'Vayor Cloud Vault',
+      title: 'AirShare Cloud Vault',
       tag: 'Persistent Storage',
       shortSnippet: 'Save files securely to Firebase & Cloud Storage with password and expiry control.',
       fullDescription: 'Organize files into custom folders, set auto-expiring links, and lock files with customized passwords. Easily preview images, play video streams, and manage backups anytime.',
@@ -112,7 +112,7 @@ export const FeaturesShowcase: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider text-left">
-                    Vayor Features & Architecture
+                    AirShare Features & Architecture
                   </h3>
                   <p className="text-[10px] text-zinc-400 text-left">Tap any feature to view full details</p>
                 </div>
@@ -179,7 +179,7 @@ export const FeaturesShowcase: React.FC = () => {
                         <p>{f.fullDescription}</p>
                         <div className="mt-2 flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold">
                           <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                          <span>Included in Vayor Free Tier</span>
+                          <span>Included in AirShare Free Tier</span>
                         </div>
                       </div>
                     )}
