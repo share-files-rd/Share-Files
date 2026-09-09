@@ -1,6 +1,6 @@
 {
-  "name": "Vayor",
-  "description": "Vayor – The infinite ocean of ultra-fast file sharing, client-encrypted transfers, and cloud storage vault.",
+  "name": "Vayor – Secure P2P Cloud Storage & AES-GCM Encrypted File Sharing",
+  "description": "Vayor provides secure P2P cloud storage and client-side AES-GCM encrypted file sharing with zero file size limits and military-grade privacy.",
   "requestFramePermissions": [
     "microphone"
   ],

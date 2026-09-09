@@ -2253,14 +2253,14 @@ export default function App() {
                   <div className="py-1">
                     <OceanWaveBrand name="VAYOR" badge="VAULT" size="xl" />
                   </div>
-                  <p className="text-[11px] sm:text-xs text-zinc-300 font-medium mt-0.5">
-                    The Infinite Ocean of Ultra-Fast File Sharing & Cloud Vault
-                  </p>
+                  <h1 className="text-[11px] sm:text-xs text-zinc-300 font-semibold mt-0.5 tracking-wide">
+                    Secure P2P Cloud Storage & AES-GCM Encrypted File Sharing
+                  </h1>
                   
                   {/* Short App Description added above Google login */}
                   <div className="mt-2 px-2.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-[10px] sm:text-[11px] text-zinc-300 leading-snug max-w-xs sm:max-w-sm mx-auto">
                     <p>
-                      Transfer unlimited files device-to-device with zero cloud latency, client-side encryption, and cloud storage — no limits or sign-up needed.
+                      Transfer unlimited large files with zero server exposure using military-grade AES-GCM encryption and direct peer-to-peer cloud storage.
                     </p>
                   </div>
 
