@@ -10,6 +10,15 @@ import nodemailer from 'nodemailer';
 const PORT = 3000;
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
+// Prevent unexpected process exits on unhandled errors or closed sockets
+process.on('uncaughtException', (err) => {
+  console.error('[Process] Uncaught exception caught safely:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Process] Unhandled rejection caught safely:', reason);
+});
+
 // Email configuration
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -217,6 +226,10 @@ async function startServer() {
 
     let registeredPeerId: string | null = null;
 
+    ws.on('error', (wsErr) => {
+      console.warn('[WS] Client socket connection error:', wsErr.message);
+    });
+
     ws.on('message', (messageData) => {
       try {
         const raw = messageData.toString();
@@ -285,8 +298,12 @@ async function startServer() {
     const realCount = activeUsers.size;
     const message = JSON.stringify({ type: 'count', value: realCount, fakeBase });
     wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
+      try {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      } catch (e) {
+        console.error('[WS] Error sending count broadcast:', e);
       }
     });
   }
@@ -298,8 +315,12 @@ async function startServer() {
     }));
     const message = JSON.stringify({ type: 'peers-list', peers: list });
     peers.forEach((p) => {
-      if (p.ws.readyState === WebSocket.OPEN) {
-        p.ws.send(message);
+      try {
+        if (p.ws.readyState === WebSocket.OPEN) {
+          p.ws.send(message);
+        }
+      } catch (e) {
+        console.error('[WS] Error sending peer broadcast:', e);
       }
     });
   }
