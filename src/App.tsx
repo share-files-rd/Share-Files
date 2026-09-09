@@ -950,51 +950,82 @@ export default function App() {
   const trackingLock = useRef(false);
 
   useEffect(() => {
-    // Real-time WebSocket Presence Tracking
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}`;
+    // Real-time WebSocket Presence Tracking with robust network switch recovery
     let socket: WebSocket | null = null;
-    let reconnectTimeout: NodeJS.Timeout;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let isMounted = true;
 
     const connect = () => {
+      if (!isMounted) return;
       try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}`;
         socket = new WebSocket(wsUrl);
-      } catch (err) {
-        console.warn('WebSocket connection init restricted:', err);
-        return;
-      }
 
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'count') {
-            setVisitorCount(data.value);
-            setLiveUsersInfo({ real: data.value, fake: data.fakeBase || 0 });
+        socket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'count') {
+              setVisitorCount(data.value);
+              setLiveUsersInfo({ real: data.value, fake: data.fakeBase || 0 });
+            }
+          } catch (err) {
+            console.warn('[WS] Ignored unparseable presence message');
           }
-        } catch (err) {
-          console.error('Failed to parse socket message:', err);
-        }
-      };
+        };
 
-      socket.onclose = () => {
-        // Attempt to reconnect after 5 seconds
-        reconnectTimeout = setTimeout(connect, 5000);
-      };
+        socket.onclose = () => {
+          if (!isMounted) return;
+          if (reconnectTimeout) clearTimeout(reconnectTimeout);
+          // Safely reconnect when network restores
+          reconnectTimeout = setTimeout(() => {
+            if (isMounted && navigator.onLine) {
+              connect();
+            }
+          }, 4000);
+        };
 
-      socket.onerror = (err) => {
-        console.warn('WebSocket connection restricted or blocked by iframe sandbox:', err);
-        socket?.close();
-      };
+        socket.onerror = (err) => {
+          console.warn('[WS] Presence connection temporarily paused on network change');
+          try {
+            socket?.close();
+          } catch (e) {
+            // ignore
+          }
+        };
+      } catch (err) {
+        console.warn('[WS] WebSocket connection init restricted:', err);
+      }
     };
 
     connect();
 
-    return () => {
-      if (socket) {
-        socket.onclose = null; // Prevent reconnect on intentional close
-        socket.close();
+    const handleNetworkChange = () => {
+      if (socket && socket.readyState !== WebSocket.OPEN) {
+        try {
+          socket.close();
+        } catch (e) {
+          // ignore
+        }
+        connect();
       }
-      clearTimeout(reconnectTimeout);
+    };
+
+    window.addEventListener('online', handleNetworkChange);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('online', handleNetworkChange);
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (socket) {
+        socket.onclose = null;
+        socket.onerror = null;
+        try {
+          socket.close();
+        } catch (e) {
+          // ignore
+        }
+      }
     };
   }, []);
 
